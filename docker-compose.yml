@@ -1,0 +1,43 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: metadata-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: metadata_db
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - metadata-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: metadata-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DATABASE_NAME=metadata_db
+      - COLLECTION_NAME=url_metadata
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - metadata-network
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+
+networks:
+  metadata-network:
+    driver: bridge
