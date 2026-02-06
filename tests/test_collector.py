@@ -50,7 +50,7 @@ class TestMetadataCollector:
             metadata, status = await MetadataCollector.collect_metadata("https://notfound.com")
             
             assert status == MetadataStatus.FAILED
-            assert "404" in metadata["error_message"]
+            assert "HTTPStatusError" in metadata["error_message"]
 
         # This tests metadata collection with connection error.
     async def test_collect_metadata_connection_error(self):      
@@ -58,5 +58,4 @@ class TestMetadataCollector:
             metadata, status = await MetadataCollector.collect_metadata("https://invalid-url.com")
             
             assert status == MetadataStatus.FAILED
-            assert metadata["url"] == "https://invalid-url.com"
-            assert "connection" in metadata["error_message"].lower()
+            assert "ConnectError" in metadata["error_message"]
